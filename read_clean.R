@@ -1,3 +1,5 @@
+# setwd("~/kaggle_home_default/team_tco/")
+
 library(dplyr)
 library(lazyeval)
 library(ggplot2)
@@ -28,7 +30,6 @@ df = application_train
 auto_explorer = function(df,target){
   explore_df <-  df
   targetCol <-  which(names(df) == target)
-  
   plot_df = NULL
   for(i in c(1:length(explore_df))){
     thisColNm = names(explore_df)[i]
@@ -40,7 +41,13 @@ auto_explorer = function(df,target){
         ggplot(aes_string(x=thisColNm,y="frac")) + geom_bar(stat = "identity")
       
       plot_df[[i]] <- p
-      } else{next}
+    } else{
+      p <- explore_df %>% 
+        ggplot(aes_string(x=thisColNm)) + geom_density(aes_string(color = shQuote(target))) +
+        xlim(min(df[,i], na.rm=T),quantile(df[,i],0.99, na.rm=T))
+      
+      plot_df[[i]] <- p
+      }
   }
   return(plot_df)
 }
@@ -54,11 +61,10 @@ for(p in plots){
 dev.off()
 
 
-p <- df %>% group_by_(thisColNm) %>%
-  summarise_(sum = interp(~ sum(x), x = as.name(target)),
-             n_entries =~n()) %>%
-  mutate(frac = sum/n_entries) %>%
-  ggplot(aes_string(x=thisColNm,y="frac")) + geom_bar(stat = "identity")
+application_train %>% #mutate(TARGET = as.factor(TARGET)) %>%
+ggplot(aes(x=AMT_INCOME_TOTAL, color = TARGET)) + 
+  geom_density()+
+  xlim(min(application_train$AMT_INCOME_TOTAL, na.rm=T),quantile(application_train$AMT_INCOME_TOTAL, 0.99, na.rm=T))
 
 # load_kagge_data()
 
