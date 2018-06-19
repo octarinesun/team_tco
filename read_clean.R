@@ -101,7 +101,7 @@ bureau <- left_join(bureau, bureau_balance, by = "SK_ID_BUREAU") %>%
      group_by(SK_ID_CURR)
 
 # Do one-hot encoding for factor variables
-# Figure out a way to loop through and determine if it's a factor variable, and automatically build the one-hot matrix. For now there's only one factor variable, so this will be okay, but it needs to be automated.
+# Figure out a way to loop through and determine if it's a factor variable, and automatically build the one-hot matrix. For now there's only one factor variable, so this will be okay, but it needs to be automated. (Try dummies package?)
 mm <- tbl_df(model.matrix(~ SK_ID_CURR + STATUS-1, data = bureau))
 mm$SK_ID_CURR <- as.integer(mm$SK_ID_CURR)
 mm <- group_by(mm, SK_ID_CURR) %>%
