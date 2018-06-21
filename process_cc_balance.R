@@ -4,7 +4,7 @@ library(dplyr)
 cc_balance <- readRDS("dat/cc_balance.RDS")
 application_train <- readRDS("dat/application_train.RDS")
 
-get_recent_data = function(df) {
+get_recent_cc_data = function(df) {
       df <- filter(df, MONTHS_BALANCE == max(MONTHS_BALANCE, 
                                              na.rm = TRUE)) %>%
             select(SK_ID_CURR, SK_ID_PREV, MONTHS_BALANCE, 
@@ -14,7 +14,8 @@ get_recent_data = function(df) {
                    AMT_RECEIVABLE_PRINCIPAL, AMT_TOTAL_RECEIVABLE, 
                    CNT_DRAWINGS_ATM_CURRENT, CNT_DRAWINGS_CURRENT, 
                    CNT_DRAWINGS_OTHER_CURRENT, CNT_DRAWINGS_POS_CURRENT, 
-                   NAME_CONTRACT_STATUS, SK_DPD, SK_DPD_DEF)
+                   NAME_CONTRACT_STATUS, SK_DPD, SK_DPD_DEF) %>%
+            rename(SK_DPD_CC = SK_DPD, SK_DPD_DEF_CC = SK_DPD_DEF)
 }
 
 # FEATURE ENGINEERING
@@ -59,7 +60,7 @@ cc_balance <- select(cc_balance, -c(AMT_RECIVABLE, AMT_PAYMENT_CURRENT)) %>%
                    AMT_PAYMENT_TOTAL_CURRENT - AMT_INST_MIN_REGULARITY, 
              interest = AMT_TOTAL_RECEIVABLE - AMT_RECEIVABLE_PRINCIPAL)
 
-cc_balance_recent <- get_recent_data(cc_balance)
+cc_balance_recent <- get_recent_cc_data(cc_balance)
 
 cc_balance_summary <- cc_balance %>% 
       group_by(SK_ID_CURR, SK_ID_PREV) %>% 
@@ -70,10 +71,10 @@ cc_balance_summary <- cc_balance %>%
                                                   na.rm = TRUE),
                 interest_total = sum(interest, na.rm = TRUE),
                 interest_mean = mean(interest, na.rm = TRUE), 
-                SK_DPD_SUM = sum(SK_DPD, na.rm = TRUE),
-                SK_DPD_MEAN = mean(SK_DPD, na.rm = TRUE),
-                SK_DPD_DEF_SUM = sum(SK_DPD_DEF, na.rm = TRUE),
-                SK_DPD_DEF_MEAN = mean(SK_DPD_DEF, na.rm = TRUE))
+                SK_DPD_CC_SUM = sum(SK_DPD, na.rm = TRUE),
+                SK_DPD_CC_MEAN = mean(SK_DPD, na.rm = TRUE),
+                SK_DPD_DEF_CC_SUM = sum(SK_DPD_DEF, na.rm = TRUE),
+                SK_DPD_DEF_CC_MEAN = mean(SK_DPD_DEF, na.rm = TRUE))
 
 # This block takes forever to run...maybe not the best way to do it
 # cc_balance_correlations <- cc_balance %>%
@@ -82,8 +83,7 @@ cc_balance_summary <- cc_balance %>%
 
 # Join the datasets
 cc_balance_summary <- left_join(cc_balance_recent, cc_balance_summary,  
-                                by = c("SK_ID_PREV", "SK_ID_CURR")) #%>%
-      #left_join(cc_balance_summary, cc_balance_correlations, by = c("SK_ID_PREV", "SK_ID_CURR"))
+                                by = c("SK_ID_PREV", "SK_ID_CURR"))
 
 
 # There are still some SK_ID_CURRs that have multiple SK_ID_PREVs. Collapse to 1:1
@@ -96,10 +96,10 @@ cc_mult <- cc_balance_summary %>%
                 amt_above_min_payment_mean = mean(amt_above_min_payment_mean),
                 interest_total = sum(interest_total),
                 interest_mean = mean(interest_mean),
-                SK_DPD_SUM = sum(SK_DPD_SUM),
-                SK_DPD_MEAN = sum(SK_DPD_MEAN),
-                SK_DPD_DEF_SUM = sum(SK_DPD_DEF_SUM),
-                SK_DPD_DEF_MEAN = mean(SK_DPD_DEF_MEAN),
+                SK_DPD_CC_SUM = sum(SK_DPD_CC_SUM),
+                SK_DPD_CC_MEAN = mean(SK_DPD_CC_MEAN),
+                SK_DPD_DEF_CC_SUM = sum(SK_DPD_DEF_CC_SUM),
+                SK_DPD_DEF_CC_MEAN = mean(SK_DPD_DEF_CC_MEAN),
                 MONTHS_BALANCE = max(MONTHS_BALANCE),
                 AMT_BALANCE = sum(AMT_BALANCE),
                 AMT_CREDIT_LIMIT_ACTUAL = sum(AMT_CREDIT_LIMIT_ACTUAL),
