@@ -101,9 +101,9 @@ make_df = function(df){
 # Load/clean installments
 
 system.time({
-installment_df <- installments %>% 
+installment_df <- inst_pay %>% 
   # Takes a fraction of the installments just to test aggregates
-  head(nrow(installments)/20) %>%
+  head(nrow(inst_pay)/20) %>%
   group_by(SK_ID_CURR, SK_ID_PREV, NUM_INSTALMENT_VERSION, NUM_INSTALMENT_NUMBER) %>%
   summarise(n_payments = n(),
             frac_pay_avg = mean(AMT_PAYMENT/AMT_INSTALMENT))
