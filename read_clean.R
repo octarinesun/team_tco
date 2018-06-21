@@ -1,3 +1,4 @@
+setwd("~/R Projects/kaggle-competitions/home-credit-default-risk/team_tco")
 # setwd("~/kaggle_home_default/team_tco/")
 
 library(dplyr)
@@ -21,9 +22,22 @@ cc_balance <- read.table(file="dat/credit_card_balance.csv", sep=",", header=T)
 saveRDS(cc_balance, file = "dat/cc_balance.RDS")
 prev_app <- read.table(file="dat/previous_application.csv", sep=",", header=T)
 saveRDS(prev_app, file = "dat/prev_app.RDS")
-installments <- read.table(file="dat/installments_payments.csv", sep=",", header=T)
-saveRDS(installments, file = "dat/installments.RDS")
+inst_pay <- read.table(file="dat/installments_payments.csv", sep=",", header=T)
+saveRDS(inst_pay, file = "dat/inst_pay.RDS")
+pos_cash <- read.table(file="dat/POS_CASH_balance.csv", sep=",", header=T)
+saveRDS(pos_cash, file = "dat/pos_cash.RDS")
 }
+
+# Read from RDS files
+application_test <- readRDS("dat/application_test.RDS")
+application_train <- readRDS("dat/application_train.RDS")
+bureau <- readRDS("dat/bureau.RDS")
+bureau_balance <- readRDS("dat/bureau_balance.RDS")
+cc_balance <- readRDS("dat/cc_balance.RDS")
+prev_app <- readRDS("dat/prev_app.RDS")
+inst_pay <- readRDS("dat/inst_pay.RDS")
+pos_cash <- readRDS("dat/pos_cash.RDS")
+
 
 # Functions
 auto_explorer = function(df,target, features_start = 3, file = "fig/plots.pdf"){
@@ -65,12 +79,19 @@ auto_explorer = function(df,target, features_start = 3, file = "fig/plots.pdf"){
 auto_explorer(application_train, target = "TARGET")
 
 
+# application_train %>% #mutate(TARGET = as.factor(TARGET)) %>%
+# ggplot(aes(x=AMT_INCOME_TOTAL, color = TARGET)) + 
+#   geom_density()+
+#   xlim(min(application_train$AMT_INCOME_TOTAL, na.rm=T),quantile(application_train$AMT_INCOME_TOTAL, 0.99, na.rm=T))
+
 # load_kagge_data()
-head(application_train)
-df = application_train
+
+#head(application_train)
+#df = application_train
 
 make_df = function(df){
   df %>% head() %>%
+            left_join(newFeatures, by = "SK_ID_CURR")
     left_join(bureau, by = "SK_ID_CURR") %>% View()
     left_join(bureau_balance, by = "SK_ID_BUREAU") %>%
     left_join(cc_balance, by = "SK_ID_CURR")
