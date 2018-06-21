@@ -2,20 +2,20 @@ library(dplyr)
 
 ## Read data
 cc_balance <- readRDS("dat/cc_balance.RDS")
-application_train <- readRDS("dat/application_train.RDS")
+#application_train <- readRDS("dat/application_train.RDS")
 
 get_recent_cc_data = function(df) {
       df <- filter(df, MONTHS_BALANCE == max(MONTHS_BALANCE, 
                                              na.rm = TRUE)) %>%
-            select(SK_ID_CURR, SK_ID_PREV, MONTHS_BALANCE, 
-                   AMT_BALANCE, AMT_CREDIT_LIMIT_ACTUAL,
+            select(SK_ID_CURR, SK_ID_PREV, AMT_BALANCE, AMT_CREDIT_LIMIT_ACTUAL,
                    AMT_DRAWINGS_ATM_CURRENT, AMT_DRAWINGS_CURRENT, 
                    AMT_DRAWINGS_OTHER_CURRENT, AMT_DRAWINGS_POS_CURRENT,
                    AMT_RECEIVABLE_PRINCIPAL, AMT_TOTAL_RECEIVABLE, 
                    CNT_DRAWINGS_ATM_CURRENT, CNT_DRAWINGS_CURRENT, 
                    CNT_DRAWINGS_OTHER_CURRENT, CNT_DRAWINGS_POS_CURRENT, 
                    NAME_CONTRACT_STATUS, SK_DPD, SK_DPD_DEF) %>%
-            rename(SK_DPD_CC = SK_DPD, SK_DPD_DEF_CC = SK_DPD_DEF)
+            rename(SK_DPD_CC = SK_DPD, SK_DPD_DEF_CC = SK_DPD_DEF,
+                   NAME_CONTRACT_STATUS_CC = NAME_CONTRACT_STATUS)
 }
 
 # FEATURE ENGINEERING
@@ -100,7 +100,6 @@ cc_mult <- cc_balance_summary %>%
                 SK_DPD_CC_MEAN = mean(SK_DPD_CC_MEAN),
                 SK_DPD_DEF_CC_SUM = sum(SK_DPD_DEF_CC_SUM),
                 SK_DPD_DEF_CC_MEAN = mean(SK_DPD_DEF_CC_MEAN),
-                MONTHS_BALANCE = max(MONTHS_BALANCE),
                 AMT_BALANCE = sum(AMT_BALANCE),
                 AMT_CREDIT_LIMIT_ACTUAL = sum(AMT_CREDIT_LIMIT_ACTUAL),
                 AMT_DRAWINGS_ATM_CURRENT = sum(AMT_DRAWINGS_ATM_CURRENT),
@@ -113,9 +112,9 @@ cc_mult <- cc_balance_summary %>%
                 CNT_DRAWINGS_CURRENT = sum(CNT_DRAWINGS_CURRENT),
                 CNT_DRAWINGS_OTHER_CURRENT = sum(CNT_DRAWINGS_OTHER_CURRENT),
                 CNT_DRAWINGS_POS_CURRENT = sum(CNT_DRAWINGS_POS_CURRENT),
-                SK_DPD = sum(SK_DPD),
-                SK_DPD_DEF = sum(SK_DPD_DEF),
-                NAME_CONTRACT_STATUS = "Unknown")
+                SK_DPD_CC = sum(SK_DPD_CC),
+                SK_DPD_DEF_CC = sum(SK_DPD_DEF_CC),
+                NAME_CONTRACT_STATUS_CC = "Unknown")
 
 # Drop SK_ID_PREV column, then filter out the SK_ID_CURRs with multiple entries;
 # Join to consolidated table (cc_mult)
@@ -126,3 +125,5 @@ cc_balance_summary <- cc_balance_summary %>%
 
 # Join to training set
 application_train <- left_join(application_train, cc_balance_summary, by = "SK_ID_CURR")
+
+rm(cc_balance_summary, cc_mult, cc_balance_recent, cc_balance)

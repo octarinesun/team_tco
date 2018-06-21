@@ -1,7 +1,7 @@
 library(dplyr)
 
 ## Read data
-application_train <- readRDS("dat/application_train.RDS")
+#application_train <- readRDS("dat/application_train.RDS")
 pos_cash <- readRDS("dat/pos_cash.RDS")
 
 get_recent_cash_data = function(df) {
@@ -9,7 +9,8 @@ get_recent_cash_data = function(df) {
                                              na.rm = TRUE)) %>%
             mutate(cnt_installment_remainder = 
                          CNT_INSTALMENT_FUTURE + MONTHS_BALANCE) %>%
-            rename(SK_DPD_POS = SK_DPD, SK_DPD_DEF_POS = SK_DPD_DEF)
+            rename(SK_DPD_POS = SK_DPD, SK_DPD_DEF_POS = SK_DPD_DEF,
+                   NAME_CONTRACT_STATUS_POS = NAME_CONTRACT_STATUS)
 }
 
 # FEATURE ENGINEERING
@@ -30,7 +31,7 @@ get_recent_cash_data = function(df) {
 # SK_DPD_DEF: sum and mean and recent
 
 pos_cash_recent <- get_recent_cash_data(pos_cash) %>%
-      select(-c(CNT_INSTALMENT, CNT_INSTALMENT_FUTURE))
+      select(-c(CNT_INSTALMENT, CNT_INSTALMENT_FUTURE, MONTHS_BALANCE))
 
 pos_cash_summary <- pos_cash %>% 
       group_by(SK_ID_CURR, SK_ID_PREV) %>% 
@@ -53,11 +54,10 @@ pos_mult <- pos_cash_summary %>%
                 SK_DPD_POS_MEAN = mean(SK_DPD_POS_MEAN),
                 SK_DPD_DEF_POS_SUM = sum(SK_DPD_DEF_POS_SUM),
                 SK_DPD_DEF_POS_MEAN = mean(SK_DPD_DEF_POS_MEAN),
-                MONTHS_BALANCE = max(MONTHS_BALANCE),
                 SK_DPD_POS = sum(SK_DPD_POS),
                 SK_DPD_DEF_POS = sum(SK_DPD_DEF_POS),
                 cnt_installment_remainder = sum(cnt_installment_remainder),
-                NAME_CONTRACT_STATUS = "Unknown")
+                NAME_CONTRACT_STATUS_POS = "Unknown")
 
 # Drop SK_ID_PREV column, then filter out the SK_ID_CURRs with multiple entries;
 # Join to consolidated table (pos_mult)
@@ -68,3 +68,5 @@ pos_cash_summary <- pos_cash_summary %>%
 
 # Join to training set
 application_train <- left_join(application_train, pos_cash_summary, by = "SK_ID_CURR")
+
+rm(pos_cash, pos_cash_recent, pos_cash_summary, pos_mult)
