@@ -64,6 +64,7 @@ auto_explorer = function(df,target, features_start = 3, file = "fig/plots.pdf"){
       p <- explore_df %>% 
         ggplot(aes_string(x=thisColNm)) + geom_density(aes_string(color = target)) +
         xlim(quantile(explore_df[,i],0.01, na.rm=T),quantile(explore_df[,i],0.99, na.rm=T)) +
+        theme(legend.position="none") +
         theme_bw()
       
       plot_df[[i]] <- p
