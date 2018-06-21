@@ -21,8 +21,9 @@ cc_balance <- read.table(file="dat/credit_card_balance.csv", sep=",", header=T)
 saveRDS(cc_balance, file = "dat/cc_balance.RDS")
 prev_app <- read.table(file="dat/previous_application.csv", sep=",", header=T)
 saveRDS(prev_app, file = "dat/prev_app.RDS")
+installments <- read.table(file="dat/installments_payments.csv", sep=",", header=T)
+saveRDS(installments, file = "dat/installments.RDS")
 }
-
 
 # Functions
 auto_explorer = function(df,target, features_start = 3, file = "fig/plots.pdf"){
@@ -65,7 +66,6 @@ auto_explorer(application_train, target = "TARGET")
 
 
 # load_kagge_data()
-
 head(application_train)
 df = application_train
 
@@ -76,3 +76,14 @@ make_df = function(df){
     left_join(cc_balance, by = "SK_ID_CURR")
     
 }
+
+# Load/clean installments
+
+system.time({
+installment_df <- installments %>% 
+  # Takes a fraction of the installments just to test aggregates
+  head(nrow(installments)/20) %>%
+  group_by(SK_ID_CURR, SK_ID_PREV, NUM_INSTALMENT_VERSION, NUM_INSTALMENT_NUMBER) %>%
+  summarise(n_payments = n(),
+            frac_pay_avg = mean(AMT_PAYMENT/AMT_INSTALMENT))
+})
