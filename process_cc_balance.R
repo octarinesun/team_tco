@@ -4,10 +4,6 @@ library(dplyr)
 cc_balance <- readRDS("dat/cc_balance.RDS")
 application_train <- readRDS("dat/application_train.RDS")
 
-# debt_time_corr = function(df) {
-#       return(cor(df$MONTHS_BALANCE, df$AMT_BALANCE, use = "complete.obs"))
-# }
-
 get_recent_data = function(df) {
       df <- filter(df, MONTHS_BALANCE == max(MONTHS_BALANCE, 
                                              na.rm = TRUE)) %>%
@@ -85,7 +81,7 @@ cc_balance_summary <- cc_balance %>%
 #       summarize(debt_time_corr = debt_time_corr(.))
 
 # Join the datasets
-cc_balance_summary <- left_join(cc_balance_summary, cc_balance_recent, 
+cc_balance_summary <- left_join(cc_balance_recent, cc_balance_summary,  
                                 by = c("SK_ID_PREV", "SK_ID_CURR")) #%>%
       #left_join(cc_balance_summary, cc_balance_correlations, by = c("SK_ID_PREV", "SK_ID_CURR"))
 
