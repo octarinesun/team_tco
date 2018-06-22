@@ -21,6 +21,7 @@ inst_pay <- readRDS("dat/inst_pay.RDS")
 # AMT_PAYMENT
 # amt_overpaid = AMT_PAYMENT - AMT_INSTALMENT
 # frac_pay_avg = AMT_PAYMENT / AMT_INSTALMENT
+# frac_overpaid = amt_overpaid / AMT_INSTALMENT
 
 # There are some entries where people have paid multiple times on a particular installment; it should be represented by a single payment for our purposes
 
@@ -33,10 +34,23 @@ inst_pay <- inst_pay %>%
 
 dbs <- inst_pay$DAYS_ENTRY_PAYMENT - inst_pay$DAYS_INSTALMENT
 ao <- round(inst_pay$AMT_PAYMENT - inst_pay$AMT_INSTALMENT, digits = 3)
-fpa <- inst_pay$AMT_PAYMENT/inst_pay$AMT_INSTALMENT
+
+# Some AMT_INSTALMENT entries are 0, which will present problems when computing fractions; change 0's to NA's to avoid this.
+
+AMT_INSTALMENT_NA <- sapply(inst_pay$AMT_INSTALMENT, function(x) { 
+      if (x == 0) { 
+            x <- NA 
+      } 
+      x 
+})
+
+fo <- ao/AMT_INSTALMENT_NA
+fpa <- inst_pay$AMT_PAYMENT/AMT_INSTALMENT_NA
 inst_pay <- ungroup(inst_pay) %>%
-      mutate(days_behind_schedule = dbs, amt_overpaid = ao, frac_pay_avg = fpa)
-rm(ao, dbs, fpa)
+      mutate(days_behind_schedule = dbs, amt_overpaid = ao, frac_pay_avg = fpa,
+             frac_overpaid = fo)
+
+rm(ao, dbs, fpa, fo, AMT_INSTALMENT_NA)
 
 # Now collapse to 1 entry per SK_ID_CURR
 
@@ -50,7 +64,10 @@ inst_pay_summary <- inst_pay %>%
                 amt_overpaid_min = min(amt_overpaid),
                 frac_pay_avg_mean = mean(frac_pay_avg),
                 frac_pay_avg_max = max(frac_pay_avg),
-                frac_pay_avg_min = min(frac_pay_avg))
+                frac_pay_avg_min = min(frac_pay_avg),
+                frac_overpaid_mean = mean(frac_overpaid),
+                frac_overpaid_max = max(frac_overpaid),
+                frac_overpaid_min = min(frac_overpaid))
 
 # Join to training set
 application_train <- left_join(application_train, inst_pay_summary, by = "SK_ID_CURR")
