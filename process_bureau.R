@@ -1,7 +1,6 @@
 library(dplyr)
 
 ## Read data
-application_train <- readRDS("dat/application_train.RDS")
 bureau <- readRDS("dat/bureau.RDS")
 bureau_balance <- readRDS("dat/bureau_balance.RDS")
 
@@ -43,4 +42,6 @@ for (i in 3:length(bureau)) {
 }
 
 # Join the new features to the training set
-application_train <- left_join(application_train, newFeatures, by = "SK_ID_CURR")
+df <- left_join(df, newFeatures, by = "SK_ID_CURR")
+
+rm(newFeatures, bureau, bureau_balance, mm, tempdf, colName, colNameMax, colNameMean, colNameMin, i)

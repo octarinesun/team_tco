@@ -1,7 +1,7 @@
 library(dplyr)
 
 ## Read data
-application_train <- readRDS("dat/application_train.RDS")
+#application_train <- readRDS("dat/application_train.RDS")
 inst_pay <- readRDS("dat/inst_pay.RDS")
 
 # FEATURE ENGINEERING
@@ -70,5 +70,5 @@ inst_pay_summary <- inst_pay %>%
                 frac_overpaid_min = min(frac_overpaid))
 
 # Join to training set
-application_train <- left_join(application_train, inst_pay_summary, by = "SK_ID_CURR")
+df <- left_join(df, inst_pay_summary, by = "SK_ID_CURR")
 rm(inst_pay, inst_pay_summary)

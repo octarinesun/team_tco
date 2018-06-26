@@ -29,14 +29,14 @@ saveRDS(pos_cash, file = "dat/pos_cash.RDS")
 }
 
 # Read from RDS files
-application_test <- readRDS("dat/application_test.RDS")
-application_train <- readRDS("dat/application_train.RDS")
-bureau <- readRDS("dat/bureau.RDS")
-bureau_balance <- readRDS("dat/bureau_balance.RDS")
-cc_balance <- readRDS("dat/cc_balance.RDS")
-prev_app <- readRDS("dat/prev_app.RDS")
-inst_pay <- readRDS("dat/inst_pay.RDS")
-pos_cash <- readRDS("dat/pos_cash.RDS")
+# application_test <- readRDS("dat/application_test.RDS")
+# application_train <- readRDS("dat/application_train.RDS")
+# bureau <- readRDS("dat/bureau.RDS")
+# bureau_balance <- readRDS("dat/bureau_balance.RDS")
+# cc_balance <- readRDS("dat/cc_balance.RDS")
+# prev_app <- readRDS("dat/prev_app.RDS")
+# inst_pay <- readRDS("dat/inst_pay.RDS")
+# pos_cash <- readRDS("dat/pos_cash.RDS")
 
 
 # Functions
@@ -70,42 +70,33 @@ auto_explorer = function(df,target, features_start = 3, file = "fig/plots.pdf"){
       plot_df[[i]] <- p
       }
   }
-  pdf("fig/plots.pdf")
+  pdf(file)
   for(p in plot_df){
     print(p)
   }
   dev.off()
 }
 
-auto_explorer(application_train, target = "TARGET")
+auto_explorer(df, target = "TARGET")
 
 
-# application_train %>% #mutate(TARGET = as.factor(TARGET)) %>%
-# ggplot(aes(x=AMT_INCOME_TOTAL, color = TARGET)) + 
-#   geom_density()+
-#   xlim(min(application_train$AMT_INCOME_TOTAL, na.rm=T),quantile(application_train$AMT_INCOME_TOTAL, 0.99, na.rm=T))
+df <- readRDS("dat/application_train.RDS")
+#df <- readRDS("dat/application_test.RDS")
 
-# load_kagge_data()
+make_df = function(){
 
-#head(application_train)
-#df = application_train
-
-make_df = function(df){
-  df %>% head() %>%
-            left_join(newFeatures, by = "SK_ID_CURR")
-    left_join(bureau, by = "SK_ID_CURR") %>% View()
-    left_join(bureau_balance, by = "SK_ID_BUREAU") %>%
-    left_join(cc_balance, by = "SK_ID_CURR")
-    
+      print("Bureau")
+      source("process_bureau.R", echo = FALSE)
+      
+      print("CC Balance")
+      source("process_cc_balance.R", echo = FALSE)
+      
+      print("Prev App")
+      source("process_prev_app.R", echo = FALSE)
+      
+      print("POS Cash")
+      source("process_pos_cash.R", echo = FALSE)
+      
+      print("Inst Payments")
+      source("process_inst_payments.R", echo = FALSE)
 }
-
-# Load/clean installments
-
-system.time({
-installment_df <- inst_pay %>% 
-  # Takes a fraction of the installments just to test aggregates
-  head(nrow(inst_pay)/20) %>%
-  group_by(SK_ID_CURR, SK_ID_PREV, NUM_INSTALMENT_VERSION, NUM_INSTALMENT_NUMBER) %>%
-  summarise(n_payments = n(),
-            frac_pay_avg = mean(AMT_PAYMENT/AMT_INSTALMENT))
-})

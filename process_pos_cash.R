@@ -67,6 +67,7 @@ pos_cash_summary <- pos_cash_summary %>%
       union(pos_mult)
 
 # Join to training set
-application_train <- left_join(application_train, pos_cash_summary, by = "SK_ID_CURR")
+df <- left_join(df, pos_cash_summary, by = "SK_ID_CURR")
+df$NAME_CONTRACT_STATUS_POS <- as.factor(df$NAME_CONTRACT_STATUS_POS)
 
 rm(pos_cash, pos_cash_recent, pos_cash_summary, pos_mult)

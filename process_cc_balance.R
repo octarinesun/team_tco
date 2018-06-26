@@ -116,6 +116,7 @@ cc_mult <- cc_balance_summary %>%
                 SK_DPD_DEF_CC = sum(SK_DPD_DEF_CC),
                 NAME_CONTRACT_STATUS_CC = "Unknown")
 
+
 # Drop SK_ID_PREV column, then filter out the SK_ID_CURRs with multiple entries;
 # Join to consolidated table (cc_mult)
 cc_balance_summary <- cc_balance_summary %>% 
@@ -124,6 +125,7 @@ cc_balance_summary <- cc_balance_summary %>%
       union(cc_mult)
 
 # Join to training set
-application_train <- left_join(application_train, cc_balance_summary, by = "SK_ID_CURR")
+df <- left_join(df, cc_balance_summary, by = "SK_ID_CURR")
+df$NAME_CONTRACT_STATUS_CC <- as.factor(df$NAME_CONTRACT_STATUS_CC)
 
 rm(cc_balance_summary, cc_mult, cc_balance_recent, cc_balance)
