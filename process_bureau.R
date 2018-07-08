@@ -1,4 +1,5 @@
 library(dplyr)
+library(data.table)
 
 ## Read data
 bureau <- readRDS("dat/bureau.RDS")
@@ -23,8 +24,8 @@ mm$SK_ID_CURR <- as.integer(mm$SK_ID_CURR)
 mm <- group_by(mm, SK_ID_CURR) %>%
       summarize_all(sum)
 
-newFeatures <- distinct(bureau, SK_ID_CURR)
-newFeatures <- left_join(newFeatures, mm)
+newFeatures <- data.frame(SK_ID_CURR = unique(bureau$SK_ID_CURR))
+newFeatures <- left_join(newFeatures, mm) %>% as.data.table()
 
 for (i in 3:length(bureau)) {
       colName <- names(bureau)[i]
@@ -33,13 +34,16 @@ for (i in 3:length(bureau)) {
             colNameMin <- paste(colName, "_MIN", sep="")
             colNameMean <- paste(colName, "_MEAN", sep="")
             colName <- as.name(colName)
-            tempdf <- summarize(bureau, !!colNameMax := max(!!colName),
+            tempdf <- summarize(as.data.table(bureau), !!colNameMax := max(!!colName),
                                 !!colNameMin := min(!!colName),
                                 !!colNameMean := mean(!!colName))
             
             newFeatures <- left_join(newFeatures, tempdf)
       }
 }
+
+# Is this what we're looking for? summary?
+bureau %>% ungroup() %>% summarise_if(is.numeric, funs(max, min, mean), na.rm=T)
 
 # Join the new features to the training set
 df <- left_join(df, newFeatures, by = "SK_ID_CURR")
