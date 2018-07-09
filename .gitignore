@@ -4,3 +4,4 @@ dat/**
 *.csv*
 .Rproj.user
 *.Rproj*
+*.Rhistory*
