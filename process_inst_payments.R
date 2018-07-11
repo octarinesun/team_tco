@@ -55,19 +55,10 @@ rm(ao, dbs, fpa, fo, AMT_INSTALMENT_NA)
 # Now collapse to 1 entry per SK_ID_CURR
 
 inst_pay_summary <- inst_pay %>% 
+      select(c(SK_ID_CURR, days_behind_schedule, amt_overpaid, frac_pay_avg, 
+               frac_overpaid)) %>%
       group_by(SK_ID_CURR) %>% 
-      summarize(days_behind_schedule_mean = mean(days_behind_schedule),
-                days_behind_schedule_max = max(days_behind_schedule),
-                days_behind_schedule_min = min(days_behind_schedule),
-                amt_overpaid_mean = mean(amt_overpaid),
-                amt_overpaid_max = max(amt_overpaid),
-                amt_overpaid_min = min(amt_overpaid),
-                frac_pay_avg_mean = mean(frac_pay_avg),
-                frac_pay_avg_max = max(frac_pay_avg),
-                frac_pay_avg_min = min(frac_pay_avg),
-                frac_overpaid_mean = mean(frac_overpaid),
-                frac_overpaid_max = max(frac_overpaid),
-                frac_overpaid_min = min(frac_overpaid))
+      summarize_if(is.numeric, funs(mean, max, min), na.rm = T)
 
 # Join to training set
 df <- left_join(df, inst_pay_summary, by = "SK_ID_CURR")

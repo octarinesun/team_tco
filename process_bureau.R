@@ -17,8 +17,7 @@ bureau <- left_join(bureau, bureau_balance, by = "SK_ID_BUREAU") %>%
                 CREDIT_TYPE)) %>%
       group_by(SK_ID_CURR)
 
-# Do one-hot encoding for factor variables
-# Figure out a way to loop through and determine if it's a factor variable, and automatically build the one-hot matrix. For now there's only one factor variable, so this will be okay, but it needs to be automated. (Try dummies package?)
+# Do one-hot encoding for factor variable STATUS
 mm <- tbl_df(model.matrix(~ SK_ID_CURR + STATUS-1, data = bureau))
 mm$SK_ID_CURR <- as.integer(mm$SK_ID_CURR)
 mm <- group_by(mm, SK_ID_CURR) %>%
@@ -27,25 +26,15 @@ mm <- group_by(mm, SK_ID_CURR) %>%
 newFeatures <- data.frame(SK_ID_CURR = unique(bureau$SK_ID_CURR))
 newFeatures <- left_join(newFeatures, mm) %>% as.data.table()
 
-for (i in 3:length(bureau)) {
-      colName <- names(bureau)[i]
-      if(class(as.data.frame(bureau)[,i]) != "factor") {
-            colNameMax <- paste(colName, "_MAX", sep="")
-            colNameMin <- paste(colName, "_MIN", sep="")
-            colNameMean <- paste(colName, "_MEAN", sep="")
-            colName <- as.name(colName)
-            tempdf <- summarize(as.data.table(bureau), !!colNameMax := max(!!colName),
-                                !!colNameMin := min(!!colName),
-                                !!colNameMean := mean(!!colName))
-            
-            newFeatures <- left_join(newFeatures, tempdf)
-      }
-}
-
-# Is this what we're looking for? summary?
-bureau %>% ungroup() %>% summarise_if(is.numeric, funs(max, min, mean), na.rm=T)
+bureau$SK_ID_BUREAU <- as.factor(bureau$SK_ID_BUREAU)
+bureau <- bureau %>% summarize_if(is.numeric, funs(max, min, mean), na.rm=T)
+# Rename columns to denote that they came from the "bureau" dataframe (some column names are the same in different files)
+colNames <- names(bureau) %>% 
+      .[2:length(.)] %>%
+      sapply(function(name) paste0("BUREAU_", name))
+names(bureau) <- c("SK_ID_CURR", colNames)
 
 # Join the new features to the training set
 df <- left_join(df, newFeatures, by = "SK_ID_CURR")
 
-rm(newFeatures, bureau, bureau_balance, mm, tempdf, colName, colNameMax, colNameMean, colNameMin, i)
+rm(newFeatures, bureau, bureau_balance, mm, colNames)

@@ -28,17 +28,12 @@ factorCols <- factorCols %>%
       summarize_all(sum)
 
 prev_app_summary <- prev_app %>%
+      select(c(SK_ID_CURR, AMT_ANNUITY, AMT_CREDIT, HOUR_APPR_PROCESS_START)) %>%
+      rename(AMT_ANNUITY_PREV = AMT_ANNUITY, 
+             AMT_CREDIT_PREV = AMT_CREDIT, 
+             HOUR_APPR_PROCESS_START_PREV = HOUR_APPR_PROCESS_START) %>%
       group_by(SK_ID_CURR) %>%
-      summarize(AMT_ANNUITY_PREV_SUM = sum(AMT_ANNUITY),
-                AMT_ANNUITY_PREV_MEAN = mean(AMT_ANNUITY),
-                AMT_ANNUITY_PREV_MAX = max(AMT_ANNUITY),
-                AMT_ANNUITY_PREV_MIN = min(AMT_ANNUITY),
-                AMT_CREDIT_PREV_SUM = sum(AMT_CREDIT),
-                AMT_CREDIT_PREV_MEAN = mean(AMT_CREDIT),
-                AMT_CREDIT_PREV_MAX = max(AMT_CREDIT),
-                AMT_CREDIT_PREV_MIN = min(AMT_CREDIT),
-                HOUR_APPR_PROCESS_START_PREV_MIN = min(HOUR_APPR_PROCESS_START),
-                HOUR_APPR_PROCESS_START_PREV_MAX = max(HOUR_APPR_PROCESS_START))
+      summarize_if(is.numeric, funs(min, max, sum, mean), na.rm = T)
 
 prev_app_summary <- left_join(prev_app_summary, factorCols, by = "SK_ID_CURR")
 
