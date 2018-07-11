@@ -27,9 +27,6 @@ newFeatures <- bureau %>%
   distinct(SK_ID_CURR) %>%
   left_join(mm, by="SK_ID_CURR")
 
-valid_col = function(x, y){
-  return(!is.factor(x) & names(x[,1]) != y)
-}
 
 bureau$SK_ID_BUREAU <- as.factor(bureau$SK_ID_BUREAU)
 bureau <- bureau %>% summarize_if(is.numeric, funs(max, min, mean), na.rm=T)
