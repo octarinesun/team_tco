@@ -2,3 +2,6 @@
 dat/**
 *.RDS*
 *.csv*
+.Rproj.user
+*.Rproj*
+*.Rhistory*
