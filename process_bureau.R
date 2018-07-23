@@ -36,7 +36,7 @@ colNames <- names(bureau) %>%
       sapply(function(name) paste0("BUREAU_", name))
 names(bureau) <- c("SK_ID_CURR", colNames)
 
-# Join the new features to the training set
-df <- left_join(df, newFeatures, by = "SK_ID_CURR")
+# Join the aggregated bureau data frame to the training set
+df <- left_join(df, bureau, by = "SK_ID_CURR")
 
 rm(newFeatures, bureau, bureau_balance, mm, colNames)
