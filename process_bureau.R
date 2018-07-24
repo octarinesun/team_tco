@@ -28,15 +28,26 @@ newFeatures <- bureau %>%
   left_join(mm, by="SK_ID_CURR")
 
 
-bureau$SK_ID_BUREAU <- as.factor(bureau$SK_ID_BUREAU)
-bureau <- bureau %>% summarize_if(is.numeric, funs(max, min, mean), na.rm=T)
 # Rename columns to denote that they came from the "bureau" dataframe (some column names are the same in different files)
 colNames <- names(bureau) %>% 
-      .[2:length(.)] %>%
-      sapply(function(name) paste0("BUREAU_", name))
-names(bureau) <- c("SK_ID_CURR", colNames)
+      .[3:length(.)] %>%
+      sapply(function(name) paste0(name, "_BUREAU"))
 
-# Join the aggregated bureau data frame to the training set
+names(bureau) <- c("SK_ID_CURR", "SK_ID_BUREAU", colNames)
+
+bureau$SK_ID_BUREAU <- as.factor(bureau$SK_ID_BUREAU)
+bureau <- bureau %>% 
+      summarize_if(is.numeric, funs(max, min, mean), na.rm=T)
+
+# Rename and add the STATUS columns
+colNames <- names(newFeatures) %>% 
+      .[2:length(.)] %>%
+      sapply(function(name) paste0(name, "_BUREAU"))
+
+names(newFeatures) <- c("SK_ID_CURR", colNames)
+bureau <- left_join(bureau, newFeatures, by = "SK_ID_CURR")
+
+# Join the aggregated bureau df to the training set
 df <- left_join(df, bureau, by = "SK_ID_CURR")
 
 rm(newFeatures, bureau, bureau_balance, mm, colNames)
