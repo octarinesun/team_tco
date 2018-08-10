@@ -37,7 +37,15 @@ names(bureau) <- c("SK_ID_CURR", "SK_ID_BUREAU", colNames)
 
 bureau$SK_ID_BUREAU <- as.factor(bureau$SK_ID_BUREAU)
 bureau <- bureau %>% 
-      summarize_if(is.numeric, funs(max, min, mean), na.rm=T)
+      summarize_if(is.numeric, funs(max, min, mean), na.rm = T)
+
+# The summarize_if function will cause -Inf and Inf values when a particular SK_ID_CURR has only NA values for a feature. So, find all of those and set them equal to NA.
+for (i in 1:length(bureau)) {
+      theCol <- bureau[i]
+      infs <- which(theCol == -Inf | theCol == Inf)
+      bureau[infs, i] <- NA
+}
+rm(theCol, infs)
 
 # Rename and add the STATUS columns
 colNames <- names(newFeatures) %>% 
@@ -46,6 +54,8 @@ colNames <- names(newFeatures) %>%
 
 names(newFeatures) <- c("SK_ID_CURR", colNames)
 bureau <- left_join(bureau, newFeatures, by = "SK_ID_CURR")
+
+
 
 # Join the aggregated bureau df to the training set
 df <- left_join(df, bureau, by = "SK_ID_CURR")

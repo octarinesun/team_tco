@@ -60,6 +60,14 @@ inst_pay_summary <- inst_pay %>%
       group_by(SK_ID_CURR) %>% 
       summarize_if(is.numeric, funs(mean, max, min), na.rm = T)
 
+# The summarize_if function will cause -Inf and Inf values when a particular SK_ID_CURR has only NA values for a feature. So, find all of those and set them equal to NA.
+for (i in 1:length(inst_pay_summary)) {
+      theCol <- inst_pay_summary[i]
+      infs <- which(theCol == -Inf | theCol == Inf)
+      inst_pay_summary[infs, i] <- NA
+}
+rm(theCol, infs)
+
 # Join to training set
 df <- left_join(df, inst_pay_summary, by = "SK_ID_CURR")
 rm(inst_pay, inst_pay_summary)

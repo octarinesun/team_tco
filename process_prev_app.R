@@ -33,8 +33,17 @@ prev_app_summary <- prev_app %>%
              AMT_CREDIT_PREV = AMT_CREDIT, 
              HOUR_APPR_PROCESS_START_PREV = HOUR_APPR_PROCESS_START) %>%
       group_by(SK_ID_CURR) %>%
-      summarize_if(is.numeric, funs(min, max, sum, mean), na.rm = T)
+      summarize_if(is.numeric, funs(min, max, sum, mean))
 
+# The summarize_if function will cause -Inf and Inf values when a particular SK_ID_CURR has only NA values for a feature. So, find all of those and set them equal to NA.
+for (i in 1:length(prev_app_summary)) {
+      theCol <- prev_app_summary[i]
+      infs <- which(theCol == -Inf | theCol == Inf)
+      prev_app_summary[infs, i] <- NA
+}
+rm(theCol, infs)
+
+factorCols <- select(factorCols, -SK_ID_PREV)
 prev_app_summary <- left_join(prev_app_summary, factorCols, by = "SK_ID_CURR")
 
 # Join to dataset
